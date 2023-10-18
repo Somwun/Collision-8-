@@ -25,6 +25,12 @@
 /processorParam:TextureFormat=Color
 /build:coin.png
 
+#begin CoinCollectSound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:CoinCollectSound.wav
+
 #begin hobbit_door.png
 /importer:TextureImporter
 /processor:TextureProcessor

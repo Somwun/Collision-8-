@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -10,16 +12,17 @@ namespace Collision__8_
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-        private int speed, points, currentXCoord, currentYCoord, prevXCoord, prevYCoord;
+        private int speed, points = 0, currentXCoord, currentYCoord, prevXCoord, prevYCoord, random;
         private bool coinVisible = true;
-        private bool left, right, up, down, prevLeft, prevRight, prevUp, prevDown;
+        private bool left, right, up, down, prevLeft, prevRight, prevUp, prevDown, remove;
+        Random generator = new Random();
         private Texture2D _pacRight, _pacLeft, _pacUp, _pacDown, _pacCurrent, _coin, _exit, _wall;
-        List<Rectangle> coins, walls;
-        Rectangle pacRect, exitRect;
+        List<Rectangle> coins, walls, exits;
+        Rectangle pacRect;
         KeyboardState keyboardState;
         MouseState mouseState;
-        SpriteFont pointCount;
-
+        SpriteFont _pointCount;
+        SoundEffect _collect;
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -32,17 +35,45 @@ namespace Collision__8_
             _graphics.PreferredBackBufferWidth = 900;
             _graphics.ApplyChanges();
             pacRect = new Rectangle(10, 10, 70, 70);
-            exitRect = new Rectangle(800, 500, 90, 90);
+            exits = new List<Rectangle>();
+            exits.Add(new Rectangle(800, 500, 90, 90));
+            exits.Add(new Rectangle(10, 500, 90, 90));
             walls = new List<Rectangle>();
-            walls.Add(new Rectangle(0, 250, 350, 75));
-            walls.Add(new Rectangle(550, 250, 350, 75));
+            walls.Add(new Rectangle(0, 250, 340, 75));
+            walls.Add(new Rectangle(560, 250, 340, 75));
+            walls.Add(new Rectangle(415, 400, 75, 200));
             speed = 4;
             points = 0;
             coins = new List<Rectangle>();
-            coins.Add(new Rectangle(400, 50, 40, 40));
-            coins.Add(new Rectangle(475, 50, 40, 40));
-            coins.Add(new Rectangle(200, 350, 40, 40));
-            coins.Add(new Rectangle(400, 350, 40, 40));
+            random = generator.Next(7, 16);
+            for (int i = 0; i < random; i++)
+            {
+                remove = false;
+                coins.Add(new Rectangle(generator.Next(1, 839), generator.Next(1, 539), 40, 40));
+                foreach (Rectangle wall in walls)
+                {
+                    if (coins[i].Intersects(wall))
+                        remove = true;        
+                }
+                int number = coins.Count - 1;
+                for (int a = 0; a < number; a++)
+                {
+                    if (coins[i].Intersects(coins[a]))
+                        remove = true;
+                }
+                foreach (Rectangle exit in exits)
+                {
+                    if (coins[i].Intersects(exit))
+                        remove = true;
+                }
+                if (coins[i].Intersects(pacRect))
+                    remove = true;
+                if (remove)
+                {
+                    coins.Remove(coins[i]);
+                    i--;
+                }
+            }
             base.Initialize();
         }
         protected override void LoadContent()
@@ -56,6 +87,8 @@ namespace Collision__8_
             _coin = Content.Load<Texture2D>("coin");
             _exit = Content.Load<Texture2D>("hobbit_door");
             _wall = Content.Load<Texture2D>("rock_barrier");
+            _collect = Content.Load<SoundEffect>("CoinCollectSound");
+            _pointCount = Content.Load<SpriteFont>("Points");
         }
         protected override void Update(GameTime gameTime)
         {
@@ -139,12 +172,17 @@ namespace Collision__8_
                 {
                     coins.RemoveAt(i);
                     points++;
+                    _collect.Play();
                     i--;
                 }
             }
+            foreach (Rectangle exit in exits)
+            {
+                if (mouseState.LeftButton == ButtonState.Pressed & exit.Contains(mouseState.X, mouseState.Y) || exit.Contains(pacRect))
+                    Exit();
+            }
 
-            if (mouseState.LeftButton == ButtonState.Pressed & exitRect.Contains(mouseState.X, mouseState.Y) || exitRect.Contains(pacRect))
-                Exit();
+
             currentXCoord = pacRect.X;
             currentYCoord = pacRect.Y;
             base.Update(gameTime);
@@ -157,8 +195,10 @@ namespace Collision__8_
                 _spriteBatch.Draw(_coin, coin, Color.White);
             foreach (Rectangle wall in walls)
                 _spriteBatch.Draw(_wall, wall, Color.White);
+            foreach (Rectangle exit in exits)
+                _spriteBatch.Draw(_exit, exit, Color.White);
             _spriteBatch.Draw(_pacCurrent, pacRect, Color.White);
-            _spriteBatch.Draw(_exit, exitRect, Color.White);
+            _spriteBatch.DrawString(_pointCount, points.ToString(), new Vector2(10, 10), Color.Black);
             _spriteBatch.End();
             base.Draw(gameTime);
         }
