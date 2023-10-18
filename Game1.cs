@@ -12,6 +12,7 @@ namespace Collision__8_
         private SpriteBatch _spriteBatch;
         private int speed, points, currentXCoord, currentYCoord, prevXCoord, prevYCoord;
         private bool coinVisible = true;
+        private bool left, right, up, down, prevLeft, prevRight, prevUp, prevDown;
         private Texture2D _pacRight, _pacLeft, _pacUp, _pacDown, _pacCurrent, _coin, _exit, _wall;
         List<Rectangle> coins, walls;
         Rectangle pacRect, exitRect;
@@ -30,18 +31,18 @@ namespace Collision__8_
             _graphics.PreferredBackBufferHeight = 600;
             _graphics.PreferredBackBufferWidth = 900;
             _graphics.ApplyChanges();
-            pacRect = new Rectangle(10, 10, 80, 80);
-            exitRect = new Rectangle(810, 510, 80, 80);
+            pacRect = new Rectangle(10, 10, 70, 70);
+            exitRect = new Rectangle(800, 500, 90, 90);
             walls = new List<Rectangle>();
             walls.Add(new Rectangle(0, 250, 350, 75));
             walls.Add(new Rectangle(550, 250, 350, 75));
             speed = 4;
             points = 0;
             coins = new List<Rectangle>();
-            coins.Add(new Rectangle(400, 50, 50, 50));
-            coins.Add(new Rectangle(475, 50, 50, 50));
-            coins.Add(new Rectangle(200, 350, 50, 50));
-            coins.Add(new Rectangle(400, 350, 50, 50));
+            coins.Add(new Rectangle(400, 50, 40, 40));
+            coins.Add(new Rectangle(475, 50, 40, 40));
+            coins.Add(new Rectangle(200, 350, 40, 40));
+            coins.Add(new Rectangle(400, 350, 40, 40));
             base.Initialize();
         }
         protected override void LoadContent()
@@ -65,44 +66,73 @@ namespace Collision__8_
             prevXCoord = currentXCoord;
             prevYCoord = currentYCoord;
             //Movement
+            prevLeft = left;
+            prevRight = right;
+            prevUp = up;
+            prevDown = down;
+            left = false;
+            right = false;
+            up = false;
+            down = false;
             if (keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A))
             {
                 pacRect.X -= speed;
                 _pacCurrent = _pacLeft;
+                foreach (Rectangle wall in walls)
+                {
+                    if (pacRect.Intersects(wall))
+                    {
+                        pacRect.X += speed;
+                    }
+                }
             }
             if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D))
             {
                 pacRect.X += speed;
                 _pacCurrent = _pacRight;
+                foreach (Rectangle wall in walls)
+                {
+                    if (pacRect.Intersects(wall))
+                    {
+                        pacRect.X -= speed;
+                    }
+                }
+                
             }
             if (keyboardState.IsKeyDown(Keys.Up) || keyboardState.IsKeyDown(Keys.W))
             {
                 pacRect.Y -= speed;
                 _pacCurrent = _pacUp;
+                foreach (Rectangle wall in walls)
+                {
+                    if (pacRect.Intersects(wall))
+                    {
+                        pacRect.Y += speed;
+                    }
+                }
             }
             if (keyboardState.IsKeyDown(Keys.Down) || keyboardState.IsKeyDown(Keys.S))
             {
                 pacRect.Y += speed;
                 _pacCurrent = _pacDown;
+                foreach (Rectangle wall in walls)
+                {
+                    if (pacRect.Intersects(wall))
+                    {
+                        pacRect.Y -= speed;
+                    }
+                }
             }
             //Bounderies
             if (pacRect.Right >= _graphics.PreferredBackBufferWidth)
-                pacRect.X -= 3;
+                pacRect.X -= speed;
             if (pacRect.Left <= 0)
-                pacRect.X += 3;
+                pacRect.X += speed;
             if (pacRect.Bottom >= _graphics.PreferredBackBufferHeight)
-                pacRect.Y -= 3;
+                pacRect.Y -= speed;
             if (pacRect.Top <= 0)
-                pacRect.Y += 3;
-            for (int i = 0; i < walls.Count; i++)
-            {
-                if (pacRect.Intersects(walls[i]))
-                {
-                    pacRect.Y = prevYCoord;
-                    pacRect.X = prevXCoord;
-                }
-            }
-            //Collisions
+                pacRect.Y += speed;
+            //Coins
             for (int i = 0; i < coins.Count; i++)
             {
                 if (pacRect.Intersects(coins[i]))
@@ -112,7 +142,8 @@ namespace Collision__8_
                     i--;
                 }
             }
-            if (mouseState.LeftButton == ButtonState.Pressed & exitRect.Contains(mouseState.X, mouseState.Y))
+
+            if (mouseState.LeftButton == ButtonState.Pressed & exitRect.Contains(mouseState.X, mouseState.Y) || exitRect.Contains(pacRect))
                 Exit();
             currentXCoord = pacRect.X;
             currentYCoord = pacRect.Y;
