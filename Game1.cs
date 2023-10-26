@@ -51,21 +51,15 @@ namespace Collision__8_
                 remove = false;
                 coins.Add(new Rectangle(generator.Next(1, 839), generator.Next(1, 539), 40, 40));
                 foreach (Rectangle wall in walls)
-                {
                     if (coins[i].Intersects(wall))
                         remove = true;        
-                }
                 int number = coins.Count - 1;
                 for (int a = 0; a < number; a++)
-                {
                     if (coins[i].Intersects(coins[a]))
                         remove = true;
-                }
                 foreach (Rectangle exit in exits)
-                {
                     if (coins[i].Intersects(exit))
                         remove = true;
-                }
                 if (coins[i].Intersects(pacRect))
                     remove = true;
                 if (remove)
@@ -112,49 +106,32 @@ namespace Collision__8_
                 pacRect.X -= speed;
                 _pacCurrent = _pacLeft;
                 foreach (Rectangle wall in walls)
-                {
                     if (pacRect.Intersects(wall))
-                    {
                         pacRect.X += speed;
-                    }
-                }
             }
             if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D))
             {
                 pacRect.X += speed;
                 _pacCurrent = _pacRight;
                 foreach (Rectangle wall in walls)
-                {
                     if (pacRect.Intersects(wall))
-                    {
-                        pacRect.X -= speed;
-                    }
-                }
-                
+                        pacRect.X -= speed;              
             }
             if (keyboardState.IsKeyDown(Keys.Up) || keyboardState.IsKeyDown(Keys.W))
             {
                 pacRect.Y -= speed;
                 _pacCurrent = _pacUp;
                 foreach (Rectangle wall in walls)
-                {
                     if (pacRect.Intersects(wall))
-                    {
                         pacRect.Y += speed;
-                    }
-                }
             }
             if (keyboardState.IsKeyDown(Keys.Down) || keyboardState.IsKeyDown(Keys.S))
             {
                 pacRect.Y += speed;
                 _pacCurrent = _pacDown;
                 foreach (Rectangle wall in walls)
-                {
                     if (pacRect.Intersects(wall))
-                    {
                         pacRect.Y -= speed;
-                    }
-                }
             }
             //Bounderies
             if (pacRect.Right >= _graphics.PreferredBackBufferWidth)
@@ -167,7 +144,6 @@ namespace Collision__8_
                 pacRect.Y += speed;
             //Coins
             for (int i = 0; i < coins.Count; i++)
-            {
                 if (pacRect.Intersects(coins[i]))
                 {
                     coins.RemoveAt(i);
@@ -175,13 +151,9 @@ namespace Collision__8_
                     _collect.Play();
                     i--;
                 }
-            }
             foreach (Rectangle exit in exits)
-            {
                 if (mouseState.LeftButton == ButtonState.Pressed & exit.Contains(mouseState.X, mouseState.Y) || exit.Contains(pacRect))
                     Exit();
-            }
-
 
             currentXCoord = pacRect.X;
             currentYCoord = pacRect.Y;
